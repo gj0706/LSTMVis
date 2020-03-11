@@ -14,7 +14,7 @@ CONFIG_FILE_NAME = 'lstm.yml'
 data_handlers = {}
 index_map = {}
 
-app = connexion.App(__name__, debug=False)
+app = connexion.App(__name__, debug=True)
 
 
 def get_context(**request):
@@ -170,7 +170,7 @@ app.add_api('lstm_server.yaml')
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--nodebug", default=False)
-parser.add_argument("--port", default="8888")
+parser.add_argument("--port", default="8080")
 parser.add_argument("--nocache", default=False)
 parser.add_argument("-dir", type=str, default=os.path.abspath('data'))
 
