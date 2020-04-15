@@ -12,7 +12,7 @@ import helper_functions as hf
 
 __author__ = 'Hendrik Strobelt'
 
-
+# Class that handles configuration (yaml) file
 class LSTMDataHandler:
     def __init__(self, directory, config):
         """LSTM data handler
@@ -53,7 +53,7 @@ class LSTMDataHandler:
                 self.dicts_value_id[name] = kv
                 self.dicts_id_value[name] = vk
 
-        # for caching the matrices
+        # for caching the matrices(cell states and hidden states in each layer)
         self.cached_matrix = {}
         self.current = {}
 
@@ -517,7 +517,7 @@ class LSTMDataHandler:
         :return: tuple(the matrix [reference], has the matrix been data_transformed)
         :rtype: (matrix, bool)
         """
-
+        # href: "http://0.0.0.0:8080/client/lstmvis.html?project=05childbook&source=states::states1&activation=0.3&cw=30&meta=..&pos=100"
         source_file = source.split('::')[0]
         source = source.split('::')[1]
         cache_id = str(source) + '__' + str(data_transform) + '__' + str(source_file)

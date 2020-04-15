@@ -1,19 +1,20 @@
+# API description file
 swagger: '2.0'
 info:
   title: LSTMVis API
   version: "0.2"
 consumes:
-  - application/json
+  - application/json # Tells Connexion what MIME type is expected by the API.
 produces:
-  - application/json
+  - application/json # Tells Connexion what Content-Type is expected by the caller of the API
 
 basePath: /api/v2
 
-paths:
-  /context:
-    get:
-      operationId: lstm_server.get_context
-      tags:
+paths: # Defines the beginning of where all the API URL endpoints are defined.
+  /context: # One path of the URL endpoint
+    get: # Defines the HTTP method this URL endpoint will respond to. This creates the GET /api/v2/context URL endpoint.
+      operationId: lstm_server.get_context # Defines the Python import path/function that will respond to an HTTP GET /api/v2/context request. The function name in lstm_server.py 文件名.函数名
+      tags: # Defines a grouping for the UI interface. All the CRUD methods you’ll define for the context endpoint will share this tag definition.
         - all
 #        - contexts
       summary: data for a list of token positions and their context
@@ -23,7 +24,7 @@ paths:
 
         - $ref: '#/parameters/source'
 
-        - name: pos
+        - name: pos # 与函数中的参数名一致
           description: list of queried positions
           in: query
           required: true
