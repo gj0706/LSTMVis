@@ -25,7 +25,7 @@ class LSTMController {
 
 
     constructor({eventHandler}) {
-        this.apiURL = URLHandler.basicURL() + '/api/v2';
+        this.apiURL = URLHandler.basicURL() + '/api/v2'; // returns "http://0.0.0.0:8080/api/v2"
         this.eventHandler = eventHandler;
         this.state = {};
         this.colorManager = new ColorManager({});
@@ -34,8 +34,8 @@ class LSTMController {
         this.updateURLparams = _.throttle(this._updateURLparams, 300);
 
 
-        this.params = URLHandler.parameters();
-        this._setDefaults(this.params);
+        this.params = URLHandler.parameters(); // golobal_helper.js 97: returns {Map} the url parameters as a key-value store (ES6 map)
+        this._setDefaults(this.params);// add default key,value parameter pairs to map
         this.updateURLparams();
 
         window.onresize = () =>
@@ -69,19 +69,56 @@ class LSTMController {
     }
 
     initByUrlAndRun() {
-        const params = this.params;
-
+        const params = this.params; // this.params = URLHandler.parameters(); golobal_helper.js 97: returns {Map} the url parameters as a key-value store (ES6 map)
+        /**
+         eg. params: Map(12)
+         [[Entries]]
+         0: {"project" => "05childbook"}
+         1: {"source" => "states::states1"}
+         2: {"activation" => 0.3}
+         3: {"cw" => 30}
+         4: {"meta" => Array(2)}
+         key: "meta"
+         value: (2) ["named_entity", "part_of_speech"]
+         5: {"pos" => 100}
+         6: {"wordBrush" => Array(2)}
+         7: {"wordBrushZero" => Array(2)}
+         key: "wordBrushZero"
+         value: (2) [1, 0]
+         8: {"sc" => Array(8)}
+         key: "sc"
+         value: (8) [5, 14, 26, 32, 92, 104, 145, 195]
+         9: {"left" => 3}
+         10: {"right" => 20}
+         11: {"dims" => Array(2)}
+         key: "dims"
+         value: Array(2)
+         0: "states"
+         1: "words"
+         length: 2
+         __proto__: Array(0)
+         size: (...)
+         __proto__: Map
+         */
         if (
           params.has('project') &&
           params.has('source')) {
-
-            Network.ajax_request(this.apiURL + '/info')
+            // this.apiURL: "http://0.0.0.0:8080/api/v2" request data from api
+            Network.ajax_request(this.apiURL + '/info') // eg. "http://0.0.0.0:8080/api/v2/info"
               .get()
               .then(response => {
-                  const allProjects = JSON.parse(response);
+                  const allProjects = JSON.parse(response); // parse fetched data into json format
                   this.allProjectInfos = new Map();
                   allProjects.forEach(d => this.allProjectInfos.set(d.project, d))
+                  /**
+                   allProjects:
+                   (2) [{…}, {…}]
+                   0: {info: {…}, project: "05childbook"}
 
+                   1: {info: {…}, project: "parens"}
+                   length: 2
+                   __proto__: Array(0)
+                    */
                   // Register the known dimensions to color manager
                   this.colorManager.reset();
                   this.projectMetas.forEach(meta => {
@@ -89,6 +126,22 @@ class LSTMController {
                           this.colorManager.registerCategoricalDim(meta.key, meta.range);
                       }
                   });
+                  /**
+                   * this.projectMetas
+                   (2) [{…}, {…}]
+                   0:
+                   key: "named_entity"
+                   type: "discrete"
+                   range: (17) ["ORDINAL", "LOC", "PRODUCT", "NORP", "WORK_OF_ART", "LANGUAGE", "GPE", "TIME", "O", "PERSON", "CARDINAL", "MONEY", "DATE", "ORG", "LAW", "EVENT", "QUANTITY"]
+                   __proto__: Object
+                   1:
+                   key: "part_of_speech"
+                   type: "discrete"
+                   range: (15) ["ADV", "NOUN", "ADP", "PUNCT", "PROPN", "DET", "SYM", "INTJ", "PART", "PRON", "NUM", "X", "CONJ", "ADJ", "VERB"]
+                   __proto__: Object
+                   length: 2
+                   __proto__: Array(0)
+                   */
 
                   this.eventHandler.trigger(LSTMController.events.projectsMetaAvailable, {});
                   this.requestContext({});
@@ -102,7 +155,7 @@ class LSTMController {
     }
 
     _setDefaults(params) {
-        const sd = (att, def) => params.set(att, params.get(att) || def);
+        const sd = (att, def) => params.set(att, params.get(att) || def); //The set() method adds or updates an element with a specified key and a value to a Map object.
         sd('left', 3);
         sd('right', 20);
         sd('dims', ['states', 'words']);
@@ -114,7 +167,9 @@ class LSTMController {
     }
 
     requestContext({params = {}, persist = true, keepSelectedCells = true}) {
-
+        /**
+         * function that gets specific data such as word_ids and words 请求到的数据具体到某些词和词的ID，可以直接用来可视化
+         */
         const parMap = Util.objectMap(params);
         const payload = new Map();
         const parameterNames =
@@ -135,11 +190,62 @@ class LSTMController {
 
         const fillRight = Math.ceil((this.windowSize.width - 60) / this.cellWidth) - this.params.get('left');
         payload.set('right', fillRight);
-
+        /** example payload: payload就是把url 中params 的map ，通过发送键值对，得到HTTP 相应，获取到对应参数的数据
+         * Map(7) {"project" => "05childbook", "pos" => 100, "source" => "states::output1", "left" => 3, "right" => 10, …}
+         [[Entries]]
+         0: {"project" => "05childbook"}
+         1: {"pos" => 100}
+         2: {"source" => "states::output1"}
+         3: {"left" => 3}
+         4: {"right" => 10}
+         5: {"activation" => 0.3}
+         6: {"dims" => Array(2)}
+         key: "dims"
+         value: Array(2)
+         0: "states"
+         1: "words"
+         length: 2
+         __proto__: Array(0)
+         size: 7
+         __proto__: Map
+         */
         Network.ajax_request(this.apiURL + '/context')
           .get(payload)
           .then(d => {
               this.context = JSON.parse(d);
+              /**
+               * example this.context:
+               * request:
+               activation: 0.3
+               dims: (2) ["states", "words"]
+               left: 3
+               pos: [100]
+               project: "05childbook"
+               right: 10
+               source: "states::output1"
+               transform: "tanh"
+               __proto__: Object
+               results:
+               cells: []
+               states: Array(1)
+               0: {data: Array(200), left: 97, pos: 100, right: 110}
+               length: 1
+               __proto__: Array(0)
+               words: Array(1)
+               0:
+               left: 97
+               pos: 100
+               right: 110
+               word_ids: (14) [69, 62, 70, 32, 68, 15, 71, 62, 72, 41, 73, 74, 75, 76]
+               words: (14) ["books", "she", "read", "and", "all", "the", "pictures", "she", "painted", ",", "would", "have", "been", "glad"]
+               __proto__: Object
+               length: 1
+               __proto__: Array(0)
+               __proto__: Object
+               __proto__: Object
+               */
+
+
               this.eventHandler.trigger(LSTMController.events.newContextAvailable, {keepSelectedCells});
           })
 
@@ -285,11 +391,11 @@ class LSTMController {
     }
 
     get source() {
-        return this.params.get('source')
+        return this.params.get('source') // eg. 'states::output1'
     }
 
     get availableSources() {
-        return this.projectInfo.states.types.map(t => `${t.file}::${t.path}`);
+        return this.projectInfo.states.types.map(t => `${t.file}::${t.path}`); // ["states::states1", "states::output1"]
     }
 
     get projectMetas() {

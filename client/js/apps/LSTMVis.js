@@ -1,6 +1,8 @@
 /**
  * Created by Hendrik Strobelt (hendrik.strobelt.com) on 1/25/17.
  */
+
+// The starter file
 class LSTMVis {
 
     constructor() {
@@ -79,3 +81,4 @@ class LSTMVis {
 const lstmVis = new LSTMVis();
 
 lstmVis;
+

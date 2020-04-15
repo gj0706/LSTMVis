@@ -166,7 +166,7 @@ class LSTMSelectionView {
         );
 
         this.lineplot.update({timeSteps, cellValues});
-        this.lineplot.actionUpdateThreshold(this.controller.threshold);
+
 
 
         this.wordSequence.update({

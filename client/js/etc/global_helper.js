@@ -88,6 +88,10 @@ class URLHandler {
         const url_path = window.location.pathname.split('/').slice(0, -2).join('/');
 
         return window.location.origin + (url_path.length ? url_path : '');
+        /**
+         * window.locatino.origin: "http://0.0.0.0:8080"
+         * basic url: "http://0.0.0.0:8080"
+         */
     }
 
     /**
@@ -96,7 +100,7 @@ class URLHandler {
      */
     static parameters() {
         // Adapted from:  http://stackoverflow.com/questions/2090551/parse-query-string-in-javascript
-        const query = window.location.search.substring(1);
+        const query = window.location.search.substring(1); // eg. query = "project=05childbook&source=states::output1&activation=0.3&cw=30&meta=..&pos=100"
         const vars = query.split('&');
 
         const urlParameters = new Map();
@@ -133,6 +137,16 @@ class URLHandler {
         });
 
         return urlParameters;
+        /** example result returned:
+        Map(6) {"project" => "05childbook", "source" => "states::states1", "activation" => 0.3, "cw" => 30, "meta" => Array(0), …}
+            [[Entries]]
+            0: {"project" => "05childbook"}
+            1: {"source" => "states::states1"}
+            2: {"activation" => 0.3}
+            3: {"cw" => 30}
+            4: {"meta" => Array(0)}
+            5: {"pos" => 100}
+         */
 
     }
 
@@ -228,7 +242,7 @@ class Network {
             return new Promise((resolve, reject) => {
 
                 // Instantiates the XMLHttpRequest
-                const client = new XMLHttpRequest();
+                const client = new XMLHttpRequest(); // Create a new XMLHttpRequest instance to send request to HTTP
                 let uri = _url;
 
                 if (args && (method === 'POST' || method === 'GET' || method === 'PUT')) {
@@ -241,7 +255,7 @@ class Network {
                 }
 
                 // Debug: console.log('URI', uri, args);
-                client.open(method, uri);
+                client.open(method, uri); // method: GET, POST, etc. uri: server uri
                 client.send();
                 client.onload = function () {
                     if (this.status >= 200 && this.status < 300) {

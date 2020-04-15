@@ -145,6 +145,7 @@ class VComponent {
      */
     _render(renderData) {
         console.error(this.constructor.name + '._render() not implemented', renderData)
+
     }
 
 
